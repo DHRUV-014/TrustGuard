@@ -1,0 +1,67 @@
+/* --- FORENSIC DASHBOARD EXTENSIONS --- */
+
+:root {
+  /* Override the default background for a deeper "Space" feel */
+  --bg-deep: #080808;
+  --accent-blue: #3b82f6;
+  --border-glass: rgba(255, 255, 255, 0.08);
+}
+
+body {
+  background-color: var(--bg-deep);
+  /* Optional: Adds a subtle digital grain to the background */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3仿真%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+  opacity: 0.98;
+}
+
+/* Glassmorphism Card Style */
+.glass-panel {
+  background: rgba(15, 15, 15, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 24px;
+}
+
+/* Scanning Animation for the Upload Zone */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.scanning-effect::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 100%;
+  background: linear-gradient(to bottom, transparent, rgba(59, 130, 246, 0.1), transparent);
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Custom Scrollbar for the Forensic Look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333;
+}
+
+/* Text glow for high-risk alerts */
+.text-glow-red {
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+}

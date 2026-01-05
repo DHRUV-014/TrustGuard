@@ -1,0 +1,19 @@
+# ---- Core API ----
+fastapi
+uvicorn[standard]
+
+# ---- Auth / Config ----
+firebase-admin
+python-dotenv
+pydantic-settings
+python-multipart
+requests
+
+# ---- ML / CV (REQUIRED by current code) ----
+numpy==1.26.4
+opencv-python==4.9.0.80
+mediapipe
+
+# ---- Torch (required by services.py / explain.py) ----
+torch
+torchvision

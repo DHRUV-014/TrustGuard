@@ -1,0 +1,24 @@
+backend/data/raw_sources/
+backend/ml/check/
+backend/data/raw_sources/
+# datasets
+backend/data/
+backend/ml/check/
+
+# model weights
+*.pt
+*.pth
+*.onnx
+
+# cache
+__pycache__/
+.ipynb_checkpoints/
+
+# system
+.DS_Store
+backend/data/
+backend/ml/check/
+backend/ml/best_model.pt
+__pycache__/
+*.pt
+*.zip
