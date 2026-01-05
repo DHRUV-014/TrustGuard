@@ -22,3 +22,4 @@ backend/ml/best_model.pt
 __pycache__/
 *.pt
 *.zip
+backend/firebase_key.json
