@@ -23,3 +23,5 @@ __pycache__/
 *.pt
 *.zip
 backend/firebase_key.json
+.env
+*.json
