@@ -6,7 +6,7 @@ Stable face crops for UI + ML
 """
 
 from __future__ import annotations
-from typing import List, Dict
+from typing import List, Dict, Optional
 import os
 import cv2
 import numpy as np
@@ -18,7 +18,6 @@ from mediapipe.tasks.python.core import base_options
 
 class FaceEngine:
     def __init__(self) -> None:
-        # 🔥 FIX: Absolute path to model (NO MORE FileNotFoundError)
         BASE_DIR = os.path.dirname(os.path.dirname(__file__))
         model_path = os.path.join(BASE_DIR, "models", "face_detector.tflite")
 
@@ -31,7 +30,7 @@ class FaceEngine:
         self.detector = vision.FaceDetector.create_from_options(options)
 
     # --------------------------------------------------
-    # PUBLIC
+    # PUBLIC (bytes input for existing pipeline)
     # --------------------------------------------------
     def process_image(self, image_bytes: bytes) -> List[Dict[str, np.ndarray]]:
         image = self._bytes_to_bgr(image_bytes)
@@ -41,7 +40,23 @@ class FaceEngine:
         return self._extract_faces(image)
 
     # --------------------------------------------------
-    # CORE
+    # ✅ NEW PUBLIC METHOD (for challenge pipeline)
+    # Accepts a BGR numpy frame directly
+    # --------------------------------------------------
+    def extract_face(self, frame: np.ndarray) -> Optional[np.ndarray]:
+        """
+        Returns first detected face crop (BGR).
+        Returns None if no face detected.
+        """
+        faces = self._extract_faces(frame)
+
+        if not faces:
+            return None
+
+        return faces[0]["face"]
+
+    # --------------------------------------------------
+    # CORE DETECTION
     # --------------------------------------------------
     def _extract_faces(self, image: np.ndarray) -> List[Dict[str, np.ndarray]]:
         h, w = image.shape[:2]
@@ -75,9 +90,9 @@ class FaceEngine:
                 continue
 
             faces.append({
-                "full": face.copy(),                  # required by tasks.py
-                "face": face.copy(),                  # UI + heatmap
-                "model": cv2.resize(face, (224, 224)) # ML inference
+                "full": face.copy(),
+                "face": face.copy(),
+                "model": cv2.resize(face, (224, 224))
             })
 
         return faces

@@ -4,8 +4,6 @@ import RiskGauge from "./RiskGauge";
 export default function ResultCard({ result }) {
   if (!result) return null;
 
-  <ForensicGauge score={result.score} />
-
   const labelColor =
     result.label === "FAKE"
       ? "#ff4d4f"
@@ -22,12 +20,12 @@ export default function ResultCard({ result }) {
       }}
     >
       {/* Result */}
-      <h2 style={{ marginBottom: "0.4rem" }}>
+      <h2 style={{ marginBottom: "0.4rem", fontSize: "1.5rem", fontWeight: "bold" }}>
         Result: <span style={{ color: labelColor }}>{result.label}</span>
       </h2>
 
       <p style={{ opacity: 0.85 }}>
-        Confidence Score: <strong>{riskScore}%</strong>
+        Confidence Score: <strong>{result.score * 100}%</strong>
       </p>
 
       <p style={{ opacity: 0.7, marginTop: "0.3rem" }}>
@@ -36,7 +34,7 @@ export default function ResultCard({ result }) {
 
       {/* Gauge */}
       <div style={{ marginTop: "1.8rem" }}>
-        <RiskGauge score={riskScore} />
+        <RiskGauge score={result.score} label={result.label} />
       </div>
 
       {/* Heatmap */}

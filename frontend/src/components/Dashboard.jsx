@@ -16,6 +16,9 @@ import { uploadFile, checkJobStatus, fetchHistory } from "../api";
 import AnalysisTimeline from "./AnalysisTimeline";
 import ComparisonSlider from "./ComparisonSlider";
 import RiskGauge from "./RiskGauge";
+import LivenessChallenge from "./LivenessChallenge";
+import CreatorVerification from "./CreatorVerification";
+import LiveMonitor from "./LiveMonitor";
 
 const INITIAL_STEPS = [
   { id: "1", name: "Media Ingestion", status: "pending" },
@@ -24,7 +27,7 @@ const INITIAL_STEPS = [
   { id: "4", name: "Report Generation", status: "pending" },
 ];
 
-const TABS = ["Analyze", "Insights", "API"];
+const TABS = ["Analyze", "Verify Creator", "Live Monitor", "History", "API"];
 
 // Shared animation constants for consistency
 const BEZIER = [0.16, 1, 0.3, 1];
@@ -176,9 +179,8 @@ export default function Dashboard({ user }) {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`relative px-4 py-1.5 text-xs font-bold uppercase rounded transition-colors ${
-                  activeTab === tab ? "text-white" : "text-slate-500 hover:text-slate-300"
-                }`}
+                className={`relative px-4 py-1.5 text-xs font-bold uppercase rounded transition-colors ${activeTab === tab ? "text-white" : "text-slate-500 hover:text-slate-300"
+                  }`}
               >
                 {activeTab === tab && (
                   <motion.div
@@ -224,10 +226,9 @@ export default function Dashboard({ user }) {
             whileTap={{ scale: 0.98 }}
             onClick={() => setActiveTab("History")}
             className={`mt-8 w-full flex items-center gap-2 px-4 py-3 rounded-xl text-xs font-bold uppercase transition border shadow-sm
-              ${
-                activeTab === "History"
-                  ? "bg-blue-600/10 border-blue-500/50 text-blue-400"
-                  : "text-slate-400 border-white/5 hover:bg-white/5"
+              ${activeTab === "History"
+                ? "bg-blue-600/10 border-blue-500/50 text-blue-400"
+                : "text-slate-400 border-white/5 hover:bg-white/5"
               }`}
           >
             <History size={14} />
@@ -247,23 +248,43 @@ export default function Dashboard({ user }) {
                 transition={{ duration: 0.5, ease: BEZIER }}
                 className="max-w-6xl mx-auto space-y-10"
               >
+
+                {/* LIVENESS CHALLENGE */}
                 <motion.div
-                  whileHover={{ scale: 1.005, borderColor: "rgba(59, 130, 246, 0.5)", backgroundColor: "rgba(59, 130, 246, 0.05)" }}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="rounded-3xl border border-white/10 bg-black/30 p-6"
+                >
+                  <LivenessChallenge />
+                </motion.div>
+
+                {/* EXISTING UPLOAD UI */}
+                <motion.div
+                  whileHover={{
+                    scale: 1.005,
+                    borderColor: "rgba(59, 130, 246, 0.5)",
+                    backgroundColor: "rgba(59, 130, 246, 0.05)",
+                  }}
                   whileTap={{ scale: 0.995 }}
                   onClick={() => fileInputRef.current.click()}
                   className="group aspect-video border-2 border-dashed border-white/10 rounded-3xl
-                             flex flex-col items-center justify-center cursor-pointer
-                             transition-all duration-300 bg-white/[0.02]"
+                     flex flex-col items-center justify-center cursor-pointer
+                     transition-all duration-300 bg-white/[0.02]"
                 >
                   <motion.div
                     initial={{ y: 0 }}
                     whileHover={{ y: -5 }}
                     className="p-4 bg-white/5 rounded-full group-hover:bg-blue-600/10 transition-colors shadow-inner"
                   >
-                      <Upload size={40} className="text-slate-400 group-hover:text-blue-400 transition-colors" />
+                    <Upload size={40} className="text-slate-400 group-hover:text-blue-400 transition-colors" />
                   </motion.div>
+
                   <p className="text-slate-300 font-medium mt-4">Upload forensic media</p>
-                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">MP4, PNG, JPG, WEBP</p>
+                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest">
+                    MP4, PNG, JPG, WEBP
+                  </p>
+
                   <input type="file" hidden ref={fileInputRef} onChange={handleFileUpload} />
                 </motion.div>
 
@@ -284,7 +305,11 @@ export default function Dashboard({ user }) {
                       >
                         <ComparisonSlider
                           original={image}
-                          heatmap={result?.heatmap_url ? `http://localhost:8000/${result.heatmap_url}` : null}
+                          heatmap={
+                            result?.heatmap_url
+                              ? `http://localhost:8000/${result.heatmap_url}`
+                              : null
+                          }
                           isProcessing={status === "PROCESSING"}
                         />
                       </motion.div>
@@ -339,6 +364,32 @@ export default function Dashboard({ user }) {
                     )}
                   </motion.div>
                 </div>
+              </motion.div>
+            )}
+
+            {activeTab === "Verify Creator" && (
+              <motion.div
+                key="verify"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.5, ease: BEZIER }}
+                className="max-w-6xl mx-auto space-y-10"
+              >
+                <CreatorVerification onComplete={() => setActiveTab("Analyze")} />
+              </motion.div>
+            )}
+
+            {activeTab === "Live Monitor" && (
+              <motion.div
+                key="monitor"
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.02 }}
+                transition={{ duration: 0.5, ease: BEZIER }}
+                className="max-w-6xl mx-auto space-y-10"
+              >
+                <LiveMonitor />
               </motion.div>
             )}
 
@@ -407,17 +458,16 @@ export default function Dashboard({ user }) {
                                 </div>
                               </td>
                               <td className="px-6 py-4">
-                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block ${
-                                    item.label === 'REAL' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase inline-block ${item.label === 'REAL' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'
+                                  }`}>
                                   {item.label}
                                 </span>
                               </td>
                               <td className="px-6 py-4 text-right">
                                 <motion.button
-                                    whileHover={{ x: 3 }}
-                                    onClick={() => viewHistoryItem(item)}
-                                    className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-bold text-xs uppercase"
+                                  whileHover={{ x: 3 }}
+                                  onClick={() => viewHistoryItem(item)}
+                                  className="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 font-bold text-xs uppercase"
                                 >
                                   Load Report <ExternalLink size={12} />
                                 </motion.button>
@@ -434,8 +484,8 @@ export default function Dashboard({ user }) {
                     animate={{ opacity: 1 }}
                     className="rounded-2xl border border-white/5 border-dashed p-20 text-center text-slate-600"
                   >
-                      <History size={40} className="mx-auto mb-4 opacity-20" />
-                      <p className="text-sm">No analysis history found in the secure vault.</p>
+                    <History size={40} className="mx-auto mb-4 opacity-20" />
+                    <p className="text-sm">No analysis history found in the secure vault.</p>
                   </motion.div>
                 )}
               </motion.div>
@@ -484,7 +534,7 @@ export default function Dashboard({ user }) {
                             transition={{ delay: idx * 0.1 }}
                             className="px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] text-slate-400 cursor-default"
                           >
-                              {r}
+                            {r}
                           </motion.span>
                         ))}
                       </AnimatePresence>
@@ -516,7 +566,7 @@ export default function Dashboard({ user }) {
                 className="text-slate-500 text-xs text-center py-10"
               >
                 <Cpu size={24} className="mx-auto mb-3 opacity-20 animate-pulse" />
-                Explanation engine idle. <br/>Upload media to begin.
+                Explanation engine idle. <br />Upload media to begin.
               </motion.div>
             )}
           </motion.div>
@@ -541,6 +591,6 @@ export default function Dashboard({ user }) {
           SECURE CONNECTION ESTABLISHED
         </div>
       </motion.footer>
-    </div>
+    </div >
   );
 }

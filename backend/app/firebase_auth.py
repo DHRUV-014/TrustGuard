@@ -1,23 +1,45 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import os
 
 import firebase_admin
-from firebase_admin import credentials, auth, firestore, exceptions
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from firebase_admin import auth, firestore, exceptions, credentials
 
 # --------------------------------------------------
-# Firebase initialization (ONCE)
+# Firebase initialization (RUNS ONCE)
 # --------------------------------------------------
 
-cred = credentials.Certificate("firebase_key.json")
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # backend/
+FIREBASE_KEY_PATH = os.path.join(BASE_DIR, "firebase_key.json")
 
 if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
+    if os.path.exists(FIREBASE_KEY_PATH):
+        cred = credentials.Certificate(FIREBASE_KEY_PATH)
+        firebase_admin.initialize_app(cred)
+    else:
+        print(f"WARNING: Firebase key not found at {FIREBASE_KEY_PATH}. Running in mock mode.")
 
 # --------------------------------------------------
-# Global clients
+# Global Firestore client
 # --------------------------------------------------
 
-firestore_db = firestore.client()
+if os.path.exists(FIREBASE_KEY_PATH):
+    firestore_db = firestore.client()
+else:
+    class MockFirestore:
+        def collection(self, name):
+            return self
+        def document(self, name):
+            return self
+        def set(self, data):
+            print(f"MOCK DB SET: {data}")
+        def get(self):
+            class MockDoc:
+                exists = True
+                def to_dict(self):
+                    return {"status": "MOCK_DONE"}
+            return MockDoc()
+    firestore_db = MockFirestore()
 
 # --------------------------------------------------
 # Auth dependency
@@ -26,9 +48,13 @@ firestore_db = firestore.client()
 security = HTTPBearer(auto_error=False)
 
 
-def verify_firebase_token(
+def firebase_auth(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ) -> dict:
+    # If no key, return mock user
+    if not os.path.exists(FIREBASE_KEY_PATH):
+        return {"uid": "mock_user_123", "email": "mock@example.com"}
+
     if not credentials or credentials.scheme.lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -39,13 +65,8 @@ def verify_firebase_token(
         decoded_token = auth.verify_id_token(credentials.credentials)
         return decoded_token
 
-    except exceptions.FirebaseError as e:
+    except exceptions.FirebaseError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Invalid Firebase token: {str(e)}",
+            detail="Invalid or expired Firebase token",
         )
-
-
-# 🔥 TEMPORARY DEV MODE (AUTH DISABLED)
-def firebase_auth():
-    return {"uid": "dev-user", "email": "dev@test.local"}

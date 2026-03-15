@@ -1,27 +1,24 @@
-backend/data/raw_sources/
-backend/ml/check/
-backend/data/raw_sources/
-# datasets
+# Datasets and Raw Sources
 backend/data/
-backend/ml/check/
+backend/data/raw_sources/
 
-# model weights
+# Model Weights and ML Checkpoints
+backend/ml/check/
+backend/ml/best_model.pt
 *.pt
 *.pth
 *.onnx
 
-# cache
-__pycache__/
-.ipynb_checkpoints/
-
-# system
-.DS_Store
-backend/data/
-backend/ml/check/
-backend/ml/best_model.pt
-__pycache__/
-*.pt
-*.zip
+# Credentials and Environment Variables (CRITICAL)
 backend/firebase_key.json
 .env
 *.json
+
+# Python and System Cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+
+# Archives
+*.zip
